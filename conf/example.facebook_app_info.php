@@ -1,0 +1,4 @@
+<?php
+$APP_ID = "YOUR_APP_ID";
+$APP_SECRET = "YOUR_APP_SECRET";
+?>
