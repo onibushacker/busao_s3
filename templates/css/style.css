@@ -1,0 +1,29 @@
+body {
+	overflow:hidden; 		/* needed to eliminate scrollbars caused by the background image */
+	padding:0;margin:0;		/* necesarry for the raster to fill the screen */
+	height:100%;width:100%;
+}
+
+#bgimg {
+	position:absolute;
+	z-index: -1;
+}
+
+#realBody{
+	position:absolute;
+	z-index: 5;				/* Place the new body above the background image */
+	overflow:auto; 			/* restore scrollbars for the content */
+	height:100%;width:100%;	/* Make the new body fill the screen */
+	background: url('../img/raster.png'); /* this is just a fancy raster, you can remove it; I kinda like it though */
+}
+
+#content{
+	padding:2em;
+	width:50%;
+	min-width:300px;
+	margin:auto;
+	background-color:rgba(255,255,255,0.9);
+}
+
+#album_list{
+}
