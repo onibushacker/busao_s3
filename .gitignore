@@ -1,5 +1,6 @@
 conf/facebook_app_info.php
 conf/facebook_token.js
+conf/s3_info.js
 data/*
 www/*
 node_modules/iconv
