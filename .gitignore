@@ -3,4 +3,5 @@ conf/facebook_token.js
 conf/s3_info.js
 data/*
 www/*
+photos/*
 node_modules/iconv

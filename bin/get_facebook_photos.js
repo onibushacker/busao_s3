@@ -1,12 +1,10 @@
 //libraries
-var fs = require('fs'),
-    path = require('path'),
-    mkdirp = require('mkdirp');
-
+var path = require('path'),
+    fs = require('fs-extra')
+    http = require('http');
 
 //local settings
-var MAX_DOWNLOADS = 3, //number of maximum number of photos being downloaded at once
-    WAIT_DOWNLOAD = 1000, //minimum time in miliseconds to wait before each download request
+var WAIT_DOWNLOAD = 500, //minimum time in miliseconds to wait before each download request
     PICTURE_SIZE = 0, //which jpeg version of each picture to download (0=highest, 1, 2, 3=smaller sizes)
     PAGE_ID = 'onibushacker',
     ALBUM_FOLDER_NAME = 'albums',
@@ -20,23 +18,73 @@ var MAX_DOWNLOADS = 3, //number of maximum number of photos being downloaded at 
 //load albums list
 var albumListJson = fs.readFileSync(path.join(ALBUM_DATA_FOLDER,'index.json'), 'utf-8'),
     albumListData = JSON.parse(albumListJson),
-    photoQueue = [];
+    albumsProcessed = 0;
+    photoQueue = [],
+    requestInterval = 0,
+    downloadedPhotos = 0;
+
+function downloadNextPhoto(){
+  var photoDownload = photoQueue.pop();
+
+  if (typeof photoDownload === 'undefined') {
+    // queue is empty
+    clearInterval(requestInterval);
+    return false;
+  }
+  var photoFormat = photoDownload.url.substring(photoDownload.url.lastIndexOf('.')),
+      localPath = path.join(ALBUM_PICTURE_FOLDER, photoDownload.album_id, photoDownload.photo_id + photoFormat);
+
+  fs.exists(localPath, function (exists) {
+    if(!exists){
+      var file = fs.createWriteStream(localPath);
+      try{
+        console.log('Downloading photo '+photoDownload.photo_id+' from album '+photoDownload.album_id);
+        console.log(photoDownload.url);
+        var request = http.get(photoDownload.url,
+          function photoDownloadData(response) {
+            response.pipe(file);
+          }// photoDownloadData
+        );
+      }catch(e){
+        console.log(e);
+        console.log(photoDownload);
+      }
+    } else{
+      console.log(localPath + ' is here already.');
+      console.log(exists);
+      downloadNextPhoto();
+    }
+  });
+}
 
 albumListData.albums.data.forEach(
   function processAlbum(album, index){
     try{
       var albumJson = fs.readFileSync(path.join(ALBUM_DATA_FOLDER, album.id, 'index.json'), 'utf-8'),
           albumData = JSON.parse(albumJson);
-      albumData.photos.data.forEach(
-        function addPhotoToQueue(photo,index){
-          photoQueue.push({
-            'album_id': album.id,
-            'photo_id': photo.id,
-            'url': photo.images[PICTURE_SIZE].source
-          });
-        }// addPhotoToQueue
+      //create album dir in the pictures folder
+      fs.mkdirp(path.join(ALBUM_PICTURE_FOLDER, album.id),
+        function albumPhotoDirCreated(err, folder) {
+          if (err) { console.error(err); }
+          //walk all phtotos in an album
+          albumData.photos.data.forEach(
+            function addPhotoToQueue(photo,index){
+              photoQueue.push({
+                'album_id': album.id,
+                'photo_id': photo.id,
+                'url': photo.images[PICTURE_SIZE].source
+              });
+            }// addPhotoToQueue
+          );
+          //check if all photos were included in the queue
+          if (++albumsProcessed == albumListData.albums.data.length){
+            console.log('start unqueueing');
+            requestInterval = setInterval(downloadNextPhoto, WAIT_DOWNLOAD);
+          }
+        }
       );
     }catch(e){
+      albumsProcessed++;
       if(e.errno == 34){
         console.log('empty album');
       }else{
@@ -47,8 +95,3 @@ albumListData.albums.data.forEach(
   }
 );
 
-function downloadNextPhoto(){
-  console.log(photoQueue.pop());
-}
-
-var requestInterval = setInterval(downloadNextPhoto, WAIT_DOWNLOAD);
