@@ -36,6 +36,7 @@ knoxClient.list({ prefix: '' },
     //iterate through all files on build folder
     findit.find(BUILD_FOLDER,
       function uploadFile(fileName) {
+        //ignore . files such as .DS_Store
         if (fileName.lastIndexOf('.') < fileName.lastIndexOf('/') + 2 ){ return; }
         var destination = fileName.substring(BUILD_FOLDER.length+1);
         //check if the file is there already (same size)
@@ -59,8 +60,6 @@ knoxClient.list({ prefix: '' },
             }
           }// localFileInfoRetrieved
         );
-
-
     })
   } // s3ListLoaded
 );
