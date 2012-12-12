@@ -22,6 +22,14 @@ indexData.cover.width = coverData.images[0].width;
 indexData.cover.height = coverData.images[0].height;
 indexData.albums = albumListData.albums.data;
 
+//helper functions for the template
+indexData.count_label = function() {
+  return function(number, render){
+    var count = render(number);
+    return count + ((render(number) == 1) ? ' foto' : ' fotos');
+  }
+}
+
 //save the generated index.html
 fs.writeFile(path.join(BUILD_FOLDER,'index.html'),
             mustache.render(indexTemplate, indexData),

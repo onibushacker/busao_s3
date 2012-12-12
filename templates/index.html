@@ -25,13 +25,16 @@
       <h2>Álbuns</h2>
       <ul id="album_list">
       {{#albums}}
-        <li>
-          {{name}}
-          <small>
-            (<a href="photos/{{{username}}}/albums/{{{id}}}.zip">download .zip</a>)
-            (<a href="{{{link}}}" rel="nofollow">open on facebook</a>)
-          </small>
-        </li>
+        {{#count}}
+          <li>
+            {{name}}
+            <small>
+              - {{#count_label}}{{count}}{{/count_label}} -
+              (<a href="photos/{{{username}}}/albums/{{{id}}}.zip">download .zip</a>)
+              (<a href="{{{link}}}" rel="nofollow">open on facebook</a>)
+            </small>
+          </li>
+        {{/count}}
       {{/albums}}
       </ul>
     </div> <!-- content -->
