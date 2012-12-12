@@ -27,7 +27,10 @@
       {{#albums}}
         <li>
           {{name}}
-          <small>(<a href="{{{link}}}" rel="nofollow">open on facebook</a>)</small>
+          <small>
+            (<a href="photos/{{{username}}}/albums/{{{id}}}.zip">download .zip</a>)
+            (<a href="{{{link}}}" rel="nofollow">open on facebook</a>)
+          </small>
         </li>
       {{/albums}}
       </ul>
