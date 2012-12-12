@@ -1,7 +1,9 @@
 //libraries
 var path = require('path'),
-    fs = require('fs-extra')
-    http = require('http');
+    fs = require('fs-extra'),
+    http = require('http'),
+    zip = require("node-native-zip"), // we are using a fork https://github.com/onkis/node-native-zip not the one from npm see README notes
+    findit = require('findit');
 
 //local settings
 var WAIT_DOWNLOAD = 500, //minimum time in miliseconds to wait before each download request
@@ -23,12 +25,50 @@ var albumListJson = fs.readFileSync(path.join(ALBUM_DATA_FOLDER,'index.json'), '
     requestInterval = 0,
     downloadedPhotos = 0;
 
+function createAlbumArchives(){
+  albumListData.albums.data.forEach(
+    function createAlbumArchive(album, index){
+      var albumPath = path.join(ALBUM_PICTURE_FOLDER, album.id);
+      //check if the folder exists
+      fs.exists(albumPath, function(exists){
+          if (exists){
+            var files = [];
+            //walk throug all files
+            var finder = findit.find(albumPath,
+              function updateFilesToZip(fileName){
+                files.push({
+                  name: fileName.substring(fileName.lastIndexOf('/')+1),
+                  path: fileName,
+                  compression: 'store'
+                });
+              }
+            );//findit.find
+            finder.on('end',function(){
+
+              var archive = new zip()
+              archive.addFiles(files, function () {
+                  var buff = archive.toBuffer(function(result){
+                    fs.writeFile(albumPath+".zip", result, function () {
+                        console.log(albumPath+'.zip finished');
+                    });
+                  });
+              }, function (err) {
+                  console.log(err);
+              });
+            });
+          }
+      });
+    } //createAlbumArchive
+  );
+}
+
 function downloadNextPhoto(){
   var photoDownload = photoQueue.pop();
 
   if (typeof photoDownload === 'undefined') {
     // queue is empty
     clearInterval(requestInterval);
+    createAlbumArchives();
     return false;
   }
   var photoFormat = photoDownload.url.substring(photoDownload.url.lastIndexOf('.')),
@@ -50,8 +90,7 @@ function downloadNextPhoto(){
         console.log(photoDownload);
       }
     } else{
-      console.log(localPath + ' is here already.');
-      console.log(exists);
+      // console.log(localPath + ' is here already.');
       downloadNextPhoto();
     }
   });
