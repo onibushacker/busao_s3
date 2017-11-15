@@ -36,7 +36,7 @@ client.api("GET", "/"+page_id,
           }
         );
         //…and load cover photo info
-        client.api("GET", "/"+result.cover.cover_id,
+        client.api("GET", "/"+result.id,
           function coverInfoLoaded(err, result){
             if (err) throw err;
             //write the cover photo json file
@@ -82,7 +82,7 @@ client.api( "GET", "/"+page_id, { fields: "albums" },
         var album_path = path.join(page_path , album_folder, album.id),
             file_path = path.join(album_path, 'index.json');
         // request all photos
-        client.api("GET", "/"+album.id, { fields: "photos" },
+        client.api("GET", "/"+album.id, { fields: "photos{id,created_time,images}" },
           function photoInfoLoaded(err, result) {
             if (err) throw err;
             albumsProcessed++;

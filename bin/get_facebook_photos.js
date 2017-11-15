@@ -71,7 +71,7 @@ function downloadNextPhoto(){
     createAlbumArchives();
     return false;
   }
-  var photoFormat = photoDownload.url.substring(photoDownload.url.lastIndexOf('.')),
+  var photoFormat = photoDownload.url.substring(photoDownload.url.lastIndexOf('.'),photoDownload.url.lastIndexOf('?')),
       localPath = path.join(ALBUM_PICTURE_FOLDER, photoDownload.album_id, photoDownload.photo_id + photoFormat);
 
   fs.exists(localPath, function (exists) {
@@ -80,7 +80,7 @@ function downloadNextPhoto(){
       try{
         console.log('Downloading photo '+photoDownload.photo_id+' from album '+photoDownload.album_id);
         console.log(photoDownload.url);
-        var request = http.get(photoDownload.url,
+        var request = http.get(photoDownload.url.replace('https', 'http'),
           function photoDownloadData(response) {
             response.pipe(file);
           }// photoDownloadData
